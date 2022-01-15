@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "shulklevitator",
+  "version": "${version}",
+  "name": "Shulk Levitator",
+  "description": "",
+  "authors": [
+    "gamma_02",
+    "Violet"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/shulklevitator/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "gamma02.shulklevitator.client.ShulklevitatorClient"
+    ],
+    "main": [
+      "gamma02.shulklevitator.Shulklevitator"
+    ]
+  },
+  "mixins": [
+    "shulklevitator.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.12",
+    "fabric": "*",
+    "minecraft": "1.18.1"
+  }
+}
