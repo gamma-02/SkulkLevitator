@@ -1,9 +1,7 @@
 package gamma02.shulklevitator.common.blocks;
 
 import gamma02.shulklevitator.Shulklevitator;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
@@ -13,38 +11,82 @@ import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class RegularShulkLevitatorBlock extends BlockWithEntity {
-    public static final DirectionProperty FACING;
+import java.util.Random;
+
+import static net.minecraft.block.FacingBlock.FACING;
+
+public class RegularShulkLevitatorBlock extends FacingBlock implements BlockEntityProvider {
+    public static VoxelShape UP = Block.createCuboidShape(0, 0, 0, 16, (0.8125*16), 16);
+    public static VoxelShape DOWN = Block.createCuboidShape(0, (0.1875*16), 0, 16, 16, 16);
+    public static VoxelShape SOUTH = Block.createCuboidShape(0, 0, 0, 16, 16, (0.8125*16));
+    public static VoxelShape NORTH = Block.createCuboidShape(0, 0, (0.1875*16), 16, 16, 16);
+    public static VoxelShape EAST = Block.createCuboidShape(0, 0, 0, (0.8125*16), 16, 16);
+    public static VoxelShape WEST = Block.createCuboidShape((16*0.1875), 0, 0, 16, 16, 16);
+
+
 
     public RegularShulkLevitatorBlock(Settings settings) {
         super(settings);
-        this.setDefaultState(((BlockState)this.stateManager.getDefaultState()).with(FACING, Direction.UP));
+        this.setDefaultState((this.stateManager.getDefaultState()).with(Properties.FACING, Direction.UP));
     }
 
     @Nullable
     @Override
     public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-
         return new ShulkLevitatorBlockEntity(pos, state, false);
+    }
+
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity){
+            ShulkLevitatorBlockEntity blockEntity = (ShulkLevitatorBlockEntity) world.getBlockEntity(pos);
+            blockEntity.displayTick(state, world, pos, random);
+        }
+    }
+
+    @Override
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+        Direction direction = state.get(Properties.FACING);
+
+        if(direction == Direction.DOWN){
+            return DOWN;
+        }else if(direction == Direction.UP){
+            return UP;
+        }else if(direction == Direction.EAST){
+            return EAST;
+        }else if(direction == Direction.WEST){
+            return WEST;
+        }else if(direction == Direction.NORTH){
+            return NORTH;
+        }else if(direction == Direction.SOUTH){
+            return SOUTH;
+        }else{
+            System.out.println("what happened!?!?!");
+            System.out.println("Direction was NOT A DIRECTION!!!!");
+            return Block.createCuboidShape(0, 0, 0, 1, 1, 1);
+        }
+
+
+
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return checkType(type, Shulklevitator.SHULK_LEVITATOR_TYPE, ShulkLevitatorBlockEntity::TICK);
+        return hackery.checkType1(type, Shulklevitator.SHULK_LEVITATOR_TYPE, ShulkLevitatorBlockEntity::TICK);
     }
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         Direction direction = ctx.getSide();
         BlockState blockState = ctx.getWorld().getBlockState(ctx.getBlockPos().offset(direction.getOpposite()));
-        return blockState.isOf(this) && blockState.get(FACING) == direction ? this.getDefaultState().with(FACING, direction.getOpposite()) : this.getDefaultState().with(FACING, direction);
+        return blockState.isOf(this) && blockState.get(Properties.FACING) == direction ? this.getDefaultState().with(Properties.FACING, direction.getOpposite()) : this.getDefaultState().with(Properties.FACING, direction);
     }
     public void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(Properties.FACING);
     }
-    static {
-        FACING = Properties.FACING;
-    }
+
 }

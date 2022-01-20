@@ -20,10 +20,13 @@ public class FlightStatusEffect extends StatusEffect {
         if(entity instanceof ServerPlayerEntity && this.duration > 1){
             ((ServerPlayerEntity) entity).getAbilities().allowFlying = true;
             ((ServerPlayerEntity) entity).sendAbilitiesUpdate();
-        }else if(entity instanceof ServerPlayerEntity){
-            ((ServerPlayerEntity) entity).getAbilities().allowFlying = false;
-            ((ServerPlayerEntity) entity).sendAbilitiesUpdate();
-            ((ServerPlayerEntity) entity).stopFallFlying();
+        }else if(entity instanceof ServerPlayerEntity) {
+            if (!((ServerPlayerEntity) entity).isCreative()){
+                ((ServerPlayerEntity) entity).getAbilities().allowFlying = false;
+                ((ServerPlayerEntity) entity).getAbilities().flying = false;
+                ((ServerPlayerEntity) entity).sendAbilitiesUpdate();
+
+            }
         }
     }
 }
