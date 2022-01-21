@@ -5,10 +5,18 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.PotionItem;
+import net.minecraft.potion.PotionUtil;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
@@ -39,6 +47,25 @@ public class RegularShulkLevitatorBlock extends FacingBlock implements BlockEnti
     @Override
     public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new ShulkLevitatorBlockEntity(pos, state, false);
+    }
+
+    @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+            if(player.getStackInHand(hand).getItem() instanceof PotionItem && world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity){
+                ItemStack potion = player.getStackInHand(hand);
+                ShulkLevitatorBlockEntity blockEntity = (ShulkLevitatorBlockEntity) world.getBlockEntity(pos);
+                if(PotionUtil.getPotion(potion) == Shulklevitator.LEVITATION_POTION){
+                    blockEntity.addEffectTime(3600);
+                    potion.decrement(1);
+                    return ActionResult.SUCCESS;
+                }else if(PotionUtil.getPotion(potion) == Shulklevitator.LONG_LEVITATION_POTION){
+                    blockEntity.addEffectTime(9600);
+                    potion.decrement(1);
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+        return super.onUse(state, world, pos, player, hand, hit);
     }
 
     @Override
