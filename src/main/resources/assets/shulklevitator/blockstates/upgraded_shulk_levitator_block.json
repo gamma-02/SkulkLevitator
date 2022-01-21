@@ -1,0 +1,42 @@
+{
+  "variants": {
+    "enabled=false,facing=up" : {
+      "model": "shulklevitator:block/upgraded/up-inactive"
+    },
+    "enabled=false,facing=down" : {
+      "model": "shulklevitator:block/upgraded/down-inactive"
+    },
+    "enabled=false,facing=west": {
+      "model": "shulklevitator:block/upgraded/west-inactive"
+    },
+    "enabled=false,facing=east": {
+      "model": "shulklevitator:block/upgraded/east-inactive"
+    },
+    "enabled=false,facing=south": {
+      "model": "shulklevitator:block/upgraded/south-inactive"
+    },
+    "enabled=false,facing=north": {
+      "model": "shulklevitator:block/upgraded/north-inactive"
+    },
+    "enabled=true,facing=up" : {
+      "model": "shulklevitator:block/upgraded/up"
+    },
+    "enabled=true,facing=down" : {
+      "model": "shulklevitator:block/upgraded/down"
+    },
+    "enabled=true,facing=west": {
+      "model": "shulklevitator:block/upgraded/west"
+    },
+    "enabled=true,facing=east": {
+      "model": "shulklevitator:block/upgraded/east"
+    },
+    "enabled=true,facing=south": {
+      "model": "shulklevitator:block/upgraded/south"
+    },
+    "enabled=true,facing=north": {
+      "model": "shulklevitator:block/upgraded/north"
+    }
+
+
+  }
+}

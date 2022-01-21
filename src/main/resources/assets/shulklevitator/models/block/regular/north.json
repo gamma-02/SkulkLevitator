@@ -1,0 +1,22 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "shulklevitator:blocks/end_stone_bricks",
+		"particle": "shulklevitator:blocks/end_stone_bricks"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 3],
+			"to": [16, 16, 16],
+			"faces": {
+				"north": {"uv": [12, 4, 8, 0], "texture": "#0"},
+				"east": {"uv": [4, 0.75, 8, 4], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [4, 0, 0, 4], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [4, 0.75, 8, 4], "rotation": 270, "texture": "#0"},
+				"up": {"uv": [4, 0.75, 8, 4], "texture": "#0"},
+				"down": {"uv": [4, 0.75, 8, 4], "rotation": 180, "texture": "#0"}
+			}
+		}
+	]
+}

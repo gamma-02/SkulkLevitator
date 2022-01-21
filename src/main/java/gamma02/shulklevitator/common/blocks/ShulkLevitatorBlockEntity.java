@@ -1,11 +1,13 @@
 package gamma02.shulklevitator.common.blocks;
 
 import gamma02.shulklevitator.Shulklevitator;
+import gamma02.shulklevitator.common.statusEffects.FlightStatusEffect;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Properties;
@@ -23,18 +25,22 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
     public int effectTime;
     private ArrayList<Vec3d> particleLocations = new ArrayList<>();
     private ArrayList<ServerPlayerEntity> oldPlayers = new ArrayList<>();
+    public static String EFFECT_KEY = "EffectTime";
+    public static String LEVEL_KEY = "Upgraded";
+
 
 
 
     public ShulkLevitatorBlockEntity(BlockPos pos, BlockState state) {
         super(Shulklevitator.SHULK_LEVITATOR_TYPE, pos, state);
         this.effectTime = 0;
-        this.level = level;
+
+
         Box thonk;
         Vec3d corner1 = Vec3d.ZERO;
         Vec3d corner2 = Vec3d.ZERO;
         Direction direction = null;
-        if (state.getBlock() instanceof RegularShulkLevitatorBlock) {
+        if (state.getBlock() instanceof RegularShulkLevitatorBlock || state.getBlock() instanceof UpgradedShulkLevitatorBlock) {
             direction = state.get(Properties.FACING);
         }
         if (direction != null) {
@@ -57,14 +63,33 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
                 corner1 = getVec3dFromBlockPos(pos.add(4, 4, -10));
                 corner2 = getVec3dFromBlockPos(pos.add(-4, -4, -1));
             }
+            if (direction == Direction.UP && level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 19, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, 1, -8));
+            } else if (direction == Direction.DOWN && level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, -19, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -1, -8));
+            } else if (direction == Direction.EAST&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(19, 8, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(1, -8, -8));
+            } else if (direction == Direction.WEST&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(-19, 8, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-1, -8, -8));
+            } else if (direction == Direction.SOUTH&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 8, 19));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -8, 1));
+            } else if (direction == Direction.NORTH&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 8, -19));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -8, -1));
+            }
 
         }
-
-
-        if (level) {
-            corner1.multiply(2);
-            corner2.multiply(2);
-        }
+//        if (world != null) {
+//            if(world.getBlockState(this.pos).getBlock() instanceof UpgradedShulkLevitatorBlock) {
+//                corner1.multiply(2);
+//                corner2.multiply(2, 0, 2);
+//            }
+//        }
         thonk = new Box(corner1, corner2);
 
 
@@ -87,12 +112,13 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
     public ShulkLevitatorBlockEntity(BlockPos pos, BlockState state, boolean level) {
         super(Shulklevitator.SHULK_LEVITATOR_TYPE, pos, state);
         this.effectTime = 0;
+
         this.level = level;
         Box thonk;
         Vec3d corner1 = Vec3d.ZERO;
         Vec3d corner2 = Vec3d.ZERO;
         Direction direction = null;
-        if (state.getBlock() instanceof RegularShulkLevitatorBlock) {
+        if (state.getBlock() instanceof RegularShulkLevitatorBlock || state.getBlock() instanceof UpgradedShulkLevitatorBlock) {
             direction = state.get(Properties.FACING);
         }
         if (direction != null) {
@@ -115,14 +141,33 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
                 corner1 = getVec3dFromBlockPos(pos.add(4, 4, -10));
                 corner2 = getVec3dFromBlockPos(pos.add(-4, -4, -1));
             }
+            if (direction == Direction.UP && level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 19, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, 1, -8));
+            } else if (direction == Direction.DOWN && level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, -19, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -1, -8));
+            } else if (direction == Direction.EAST&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(19, 8, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(1, -8, -8));
+            } else if (direction == Direction.WEST&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(-19, 8, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-1, -8, -8));
+            } else if (direction == Direction.SOUTH&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 8, 19));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -8, 1));
+            } else if (direction == Direction.NORTH&& level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 8, -19));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -8, -1));
+            }
 
         }
 
 
-        if (level) {
-            corner1.multiply(2);
-            corner2.multiply(2);
-        }
+
+        corner1.add(0.5, 0, 0.5);
+        corner2.add(0.5, 0, 0.5);
+
         thonk = new Box(corner1, corner2);
 
 
@@ -143,7 +188,7 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
     }
 
     public void addEffectTime(int addAmount){
-        this.effectTime += addAmount;
+        this.effectTime = this.effectTime + addAmount;
     }
     public void setEffectTime(int time){
         this.effectTime = time;
@@ -154,14 +199,17 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 
 
     public void tick(World world, BlockPos pos, BlockState state, ShulkLevitatorBlockEntity blockEntity) {
+
         ArrayList<ServerPlayerEntity> currentPlayers = new ArrayList<>();
+        boolean shouldSetState = false;
         if(this.effectTime > 0) {
+            shouldSetState = true;
             Box box = new Box(0, 0, 0, 0, 0, 0);
             Box thonk;
             Vec3d corner1 = Vec3d.ZERO;
             Vec3d corner2 = Vec3d.ZERO;
             Direction direction = null;
-            if (state.getBlock() instanceof RegularShulkLevitatorBlock) {
+            if (state.getBlock() instanceof RegularShulkLevitatorBlock || state.getBlock() instanceof UpgradedShulkLevitatorBlock) {
                 direction = state.get(Properties.FACING);
             }
             if (direction != null) {
@@ -184,41 +232,71 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
                     corner1 = getVec3dFromBlockPos(pos.add(4, 4, -10));
                     corner2 = getVec3dFromBlockPos(pos.add(-4, -4, -1));
                 }
+                if (direction == Direction.UP && level) {
+                    corner1 = getVec3dFromBlockPos(pos.add(8, 19, 8));
+                    corner2 = getVec3dFromBlockPos(pos.add(-8, 1, -8));
+                } else if (direction == Direction.DOWN && level) {
+                    corner1 = getVec3dFromBlockPos(pos.add(8, -19, 8));
+                    corner2 = getVec3dFromBlockPos(pos.add(-8, -1, -8));
+                } else if (direction == Direction.EAST&& level) {
+                    corner1 = getVec3dFromBlockPos(pos.add(19, 8, 8));
+                    corner2 = getVec3dFromBlockPos(pos.add(1, -8, -8));
+                } else if (direction == Direction.WEST&& level) {
+                    corner1 = getVec3dFromBlockPos(pos.add(-19, 8, 8));
+                    corner2 = getVec3dFromBlockPos(pos.add(-1, -8, -8));
+                } else if (direction == Direction.SOUTH&& level) {
+                    corner1 = getVec3dFromBlockPos(pos.add(8, 8, 19));
+                    corner2 = getVec3dFromBlockPos(pos.add(-8, -8, 1));
+                } else if (direction == Direction.NORTH&& level) {
+                    corner1 = getVec3dFromBlockPos(pos.add(8, 8, -19));
+                    corner2 = getVec3dFromBlockPos(pos.add(-8, -8, -1));
+                }
 
             }
+            world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, true) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, true));
 
 
-            if (level) {
-                corner1.multiply(2);
-                corner2.multiply(2);
-            }
+
+
+            corner1.add(0.5, 0, 0.5);
+            corner2.add(0.5, 0, 0.5);
+
             box = new Box(corner1, corner2);
             if (world.isRegionLoaded((int) box.minX, (int) box.minZ, (int) box.maxX, (int) box.maxZ)) {
                 for (Entity entity : world.getOtherEntities(null, box)) {
                     if (entity instanceof ServerPlayerEntity) {
-                        ((ServerPlayerEntity) entity).addStatusEffect(new StatusEffectInstance(Shulklevitator.FLIGHT, this.effectTime));
-                        currentPlayers.add((ServerPlayerEntity) entity);
+                            ((ServerPlayerEntity) entity).addStatusEffect(new StatusEffectInstance(Shulklevitator.FLIGHT, this.effectTime));
+                            currentPlayers.add((ServerPlayerEntity) entity);
+                            this.effectTime--;
                     }
                 }
             }
 
 
-            this.effectTime--;
+
+        }else{
+            world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, false) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, false));
+
         }
         for(ServerPlayerEntity entity : this.oldPlayers){
             if(!currentPlayers.contains(entity)){
-                entity.removeStatusEffect(Shulklevitator.FLIGHT);
+                entity.setStatusEffect(new StatusEffectInstance(Shulklevitator.FLIGHT, 2), null);
             }
         }
-
-
-
+//        if(effectTime == 0){
+//            world.setBlockState(this.pos, world.getBlockState(this.pos).with(Properties.ENABLED, false));
+//        }
+//                world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, effectTime > 0) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, this.effectTime > 0));
+//        System.out.println(this.effectTime);
+        this.oldPlayers = currentPlayers;
     }
 
     public void displayTick(BlockState state, World world, BlockPos pos, Random random) {
+        Random random1 = new Random();
+        Random random2 = new Random();
         if (world.isClient) {
             for (Vec3d element : this.particleLocations) {
-                world.addParticle(ParticleTypes.END_ROD, element.x, element.y, element.z, 0.005 * MathHelper.nextFloat(random, 1, 2), 0.005 * MathHelper.nextFloat(random, 1, 2), 0.005 * MathHelper.nextFloat(random, 1, 2));
+                world.addParticle(ParticleTypes.END_ROD, element.x, element.y, element.z, 0.005 * MathHelper.nextFloat(random, 1, 2), 0.005 * MathHelper.nextFloat(random1, 1, 2), 0.005 * MathHelper.nextFloat(random2, 1, 2));
             }
         }
     }
@@ -246,5 +324,20 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
             return false;
         }
         return i == box.minZ || i == box.maxZ;
+    }
+
+    @Override
+    public void readNbt(NbtCompound nbt) {
+        super.writeNbt(nbt);
+        System.out.println("reading");
+//        this.effectTime = nbt.getInt(EFFECT_KEY);
+        this.level = nbt.getBoolean(LEVEL_KEY);
+    }
+
+    @Override
+    protected void writeNbt(NbtCompound nbt) {
+        super.writeNbt(nbt);
+//        nbt.putInt(EFFECT_KEY, effectTime);
+        nbt.putBoolean(LEVEL_KEY, this.level);
     }
 }
