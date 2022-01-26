@@ -5,13 +5,8 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.PotionItem;
-import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -54,41 +49,20 @@ public class UpgradedShulkLevitatorBlock extends FacingBlock implements BlockEnt
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 
-        return RegularShulkLevitatorBlock.shouldUse(state, world, pos, player, hand, hit);
+        return RegularShulkLevitatorBlock.shouldUse(world, pos, player, hand);
     }
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity){
-            ShulkLevitatorBlockEntity blockEntity = (ShulkLevitatorBlockEntity) world.getBlockEntity(pos);
+        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity blockEntity){
             blockEntity.displayTick(state, world, pos, random);
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        Direction direction = state.get(Properties.FACING);
-
-        if(direction == Direction.DOWN){
-            return DOWN;
-        }else if(direction == Direction.UP){
-            return UP;
-        }else if(direction == Direction.EAST){
-            return EAST;
-        }else if(direction == Direction.WEST){
-            return WEST;
-        }else if(direction == Direction.NORTH){
-            return NORTH;
-        }else if(direction == Direction.SOUTH){
-            return SOUTH;
-        }else{
-            System.out.println("what happened!?!?!");
-            System.out.println("Direction was NOT A DIRECTION!!!!");
-            return Block.createCuboidShape(0, 0, 0, 1, 1, 1);
-        }
-
-
-
+        return RegularShulkLevitatorBlock.getVoxelShape(state, DOWN, UP, EAST, WEST, NORTH, SOUTH);
     }
 
     @Nullable

@@ -1,18 +1,11 @@
 package gamma02.shulklevitator.common.misc;
 
-import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.Potions;
 import net.minecraft.util.registry.Registry;
-import org.lwjgl.system.CallbackI;
 
 import java.util.HashMap;
 
 public class PotionDispenserBehaviors {
-    public PotionDispenserBehaviors(){
-
-    }
-
 
 
     private static HashMap<Potion, PotionDispenserBehavior> potions = new HashMap<>();
@@ -31,6 +24,7 @@ public class PotionDispenserBehaviors {
      * @param potion potion to link behavior to
      * @param behavior linked behavior
      */
+    @SuppressWarnings("unused")
     public static void registerPotionBehavior(Potion potion, PotionDispenserBehavior behavior){
         if(potions.containsKey(potion)){
             System.out.println("POTIONS ALREADY CONTAINS LINKED POTION BEHAVIOR FOR " + Registry.POTION.getId(potion) + ". SKIPPING!");

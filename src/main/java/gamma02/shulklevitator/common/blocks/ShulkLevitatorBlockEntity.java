@@ -1,8 +1,6 @@
 package gamma02.shulklevitator.common.blocks;
 
 import gamma02.shulklevitator.Shulklevitator;
-import gamma02.shulklevitator.common.statusEffects.FlightStatusEffect;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
@@ -12,18 +10,15 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.*;
-import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
-import org.lwjgl.system.CallbackI;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public class ShulkLevitatorBlockEntity extends BlockEntity {
     public boolean level = false;
-    private Box effectBoundingBox;
     public int effectTime;
-    private ArrayList<Vec3d> particleLocations = new ArrayList<>();
+    private final ArrayList<Vec3d> particleLocations = new ArrayList<>();
     private ArrayList<ServerPlayerEntity> oldPlayers = new ArrayList<>();
     public static String EFFECT_KEY = "EffectTime";
     public static String LEVEL_KEY = "Upgraded";
@@ -100,7 +95,7 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 //                        this.particleLocations.add(new Vec3d(i, j, k));
 //                    }
                     if((isOnMaxOrMinX(i, thonk) && isOnMaxOrMinY(j, thonk)) || (isOnMaxOrMinY(j, thonk) && isOnMaxOrMinZ(k, thonk)) || (isOnMaxOrMinX(i, thonk) && isOnMaxOrMinZ(k, thonk)) || (isOnMaxOrMinY(j, thonk) && isOnMaxOrMinZ(k, thonk) && isOnMaxOrMinX(i, thonk))){
-                        this.particleLocations.add(new Vec3d(i, j, k));
+                        this.particleLocations.add(new Vec3d(i+0.5, j+0.5, k+0.5));
                     }
                 }
             }
@@ -175,7 +170,7 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
             for (int j = (int) thonk.minY; j <= thonk.maxY; j++) {
                 for (int k = (int) thonk.minZ; k <= thonk.maxZ; k++) {
                     if ((isOnMaxOrMinX(i, thonk) && isOnMaxOrMinY(j, thonk)) || (isOnMaxOrMinY(j, thonk) && isOnMaxOrMinZ(k, thonk)) || (isOnMaxOrMinX(i, thonk) && isOnMaxOrMinZ(k, thonk))) {
-                        this.particleLocations.add(new Vec3d(i, j, k));
+                        this.particleLocations.add(new Vec3d(i+0.5, j+0.5, k+0.5));
                     }
                 }
             }
@@ -184,28 +179,20 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 
 
     public static <T extends ShulkLevitatorBlockEntity> void TICK(World world, BlockPos pos, BlockState state, T t) {
-        t.tick(world, pos, state, t);
+        t.tick(world, pos, state);
     }
 
     public void addEffectTime(int addAmount){
         this.effectTime = this.effectTime + addAmount;
     }
-    public void setEffectTime(int time){
-        this.effectTime = time;
-    }
-    public void removeEffectTime(int removeAmount){
-        this.effectTime -= removeAmount;
-    }
 
 
-    public void tick(World world, BlockPos pos, BlockState state, ShulkLevitatorBlockEntity blockEntity) {
+
+    public void tick(World world, BlockPos pos, BlockState state) {
 
         ArrayList<ServerPlayerEntity> currentPlayers = new ArrayList<>();
-        boolean shouldSetState = false;
         if(this.effectTime > 0) {
-            shouldSetState = true;
-            Box box = new Box(0, 0, 0, 0, 0, 0);
-            Box thonk;
+            Box box;
             Vec3d corner1 = Vec3d.ZERO;
             Vec3d corner2 = Vec3d.ZERO;
             Direction direction = null;
@@ -261,6 +248,7 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
             corner2.add(0.5, 0, 0.5);
 
             box = new Box(corner1, corner2);
+            //noinspection deprecation
             if (world.isRegionLoaded((int) box.minX, (int) box.minZ, (int) box.maxX, (int) box.maxZ)) {
                 for (Entity entity : world.getOtherEntities(null, box)) {
                     if (entity instanceof ServerPlayerEntity) {
@@ -325,7 +313,6 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
     @Override
     public void readNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
-        System.out.println("reading");
         this.effectTime = nbt.getInt(EFFECT_KEY);
         this.level = nbt.getBoolean(LEVEL_KEY);
     }
@@ -335,5 +322,9 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
         super.writeNbt(nbt);
         nbt.putInt(EFFECT_KEY, effectTime);
         nbt.putBoolean(LEVEL_KEY, this.level);
+    }
+
+    public boolean canAddEffect(int time){
+        return this.level ? time < UpgradedShulkLevitatorBlock.MAX_CAPACITY-this.effectTime : time < RegularShulkLevitatorBlock.MAX_CAPACITY-this.effectTime;
     }
 }

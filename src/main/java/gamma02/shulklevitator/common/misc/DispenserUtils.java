@@ -6,11 +6,9 @@ import gamma02.shulklevitator.common.blocks.ShulkLevitatorBlockEntity;
 import gamma02.shulklevitator.common.blocks.UpgradedShulkLevitatorBlock;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.util.math.BlockPointer;
 

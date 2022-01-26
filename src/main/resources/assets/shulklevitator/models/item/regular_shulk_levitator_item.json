@@ -1,6 +1,5 @@
 {
   "credit": "Made with Blockbench",
-  "parent": "minecraft:block",
   "texture_size": [64, 64],
   "textures": {
     "0": "shulklevitator:blocks/end_stone_bricks",

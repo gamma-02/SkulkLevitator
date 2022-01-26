@@ -29,11 +29,6 @@ public class FlightStatusEffect extends StatusEffect {
             }
         }
     }
-    public static void completeRemoveEffect(LivingEntity entity){
-        if(entity instanceof ServerPlayerEntity){
-            ((ServerPlayerEntity) entity).getAbilities().allowFlying = false;
-            ((ServerPlayerEntity) entity).getAbilities().flying = false;
-        }
-    }
+
 
 }
