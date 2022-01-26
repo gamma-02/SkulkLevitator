@@ -3,5 +3,6 @@
   "item.shulklevitator.regular_shulk_levitator_item": "Shulk Levitator",
   "effect.shulklevitator.flight": "Flight",
   "block.shulklevitator.upgraded_shulk_levitator_block": "Netherite Shulk Levitator",
-  "block.shulklevitator.regular_shulk_levitator_block": "Shulk Levitator"
+  "block.shulklevitator.regular_shulk_levitator_block": "Shulk Levitator",
+  "item.shulklevitator.shulker_bullet_bottle": "Bottle of Shulker Bullet"
 }

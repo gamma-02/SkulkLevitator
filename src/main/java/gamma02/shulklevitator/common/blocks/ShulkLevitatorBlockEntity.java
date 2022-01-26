@@ -312,7 +312,8 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 
     @Override
     public void readNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+        super.readNbt(nbt);
+        System.out.println("reading");
         this.effectTime = nbt.getInt(EFFECT_KEY);
         this.level = nbt.getBoolean(LEVEL_KEY);
     }

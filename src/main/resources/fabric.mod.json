@@ -10,7 +10,7 @@
   ],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/shulklevitator/icon.png",
+  "accessWidener" : "shulklevitator.aw",
   "environment": "*",
   "entrypoints": {
     "client": [
