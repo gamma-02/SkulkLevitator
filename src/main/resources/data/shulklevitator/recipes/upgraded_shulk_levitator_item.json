@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:smithing",
+  "base": {"item": "shulklevitator:regular_shulk_levitator_item"},
+  "addition": {"item": "minecraft:netherite_ingot"},
+  "result": {"item": "shulklevitator:upgraded_shulk_levitator_item"}
+}

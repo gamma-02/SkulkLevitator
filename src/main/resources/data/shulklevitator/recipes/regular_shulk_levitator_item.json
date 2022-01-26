@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    "SUS",
+    "BOB"
+  ],
+  "key":{
+    "P": {"item": "minecraft:ender_pearl"},
+    "S": {"item": "minecraft:shulker_shell"},
+    "U": {
+      "item": "shulklevitator:shulker_bullet_bottle"
+    },
+    "B": {"item": "minecraft:end_stone_bricks"},
+    "O": {"item": "minecraft:obsidian"}
+  },
+  "result": {
+    "item": "shulklevitator:regular_shulk_levitator_item",
+    "count": 1
+  }
+}

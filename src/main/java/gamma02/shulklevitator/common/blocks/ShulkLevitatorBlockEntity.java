@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class ShulkLevitatorBlockEntity extends BlockEntity {
-    private boolean level = false;
+    public boolean level = false;
     private Box effectBoundingBox;
     public int effectTime;
     private ArrayList<Vec3d> particleLocations = new ArrayList<>();
@@ -253,7 +253,6 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
                 }
 
             }
-            world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, true) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, true));
 
 
 
@@ -274,20 +273,17 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 
 
 
-        }else{
-            world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, false) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, false));
-
         }
+        if(!world.isClient) {
+            world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, this.effectTime > 0).with(Properties.FACING, state.get(Properties.FACING)) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, this.effectTime > 0).with(Properties.FACING, state.get(Properties.FACING)));
+        }
+
+
         for(ServerPlayerEntity entity : this.oldPlayers){
             if(!currentPlayers.contains(entity)){
                 entity.setStatusEffect(new StatusEffectInstance(Shulklevitator.FLIGHT, 2), null);
             }
         }
-//        if(effectTime == 0){
-//            world.setBlockState(this.pos, world.getBlockState(this.pos).with(Properties.ENABLED, false));
-//        }
-//                world.setBlockState(pos, level ? Shulklevitator.UPGRADED_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, effectTime > 0) : Shulklevitator.REGULAR_SHULK_LEVITATOR_BLOCK.getDefaultState().with(Properties.ENABLED, this.effectTime > 0));
-//        System.out.println(this.effectTime);
         this.oldPlayers = currentPlayers;
     }
 
@@ -330,14 +326,14 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
     public void readNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
         System.out.println("reading");
-//        this.effectTime = nbt.getInt(EFFECT_KEY);
+        this.effectTime = nbt.getInt(EFFECT_KEY);
         this.level = nbt.getBoolean(LEVEL_KEY);
     }
 
     @Override
     protected void writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
-//        nbt.putInt(EFFECT_KEY, effectTime);
+        nbt.putInt(EFFECT_KEY, effectTime);
         nbt.putBoolean(LEVEL_KEY, this.level);
     }
 }
