@@ -17,8 +17,9 @@ import java.util.Random;
 
 public class ShulkLevitatorBlockEntity extends BlockEntity {
     public boolean level = false;
+    private Box effectBoundingBox;
     public int effectTime;
-    private final ArrayList<Vec3d> particleLocations = new ArrayList<>();
+    private ArrayList<Vec3d> particleLocations = new ArrayList<>();
     private ArrayList<ServerPlayerEntity> oldPlayers = new ArrayList<>();
     public static String EFFECT_KEY = "EffectTime";
     public static String LEVEL_KEY = "Upgraded";
@@ -95,12 +96,17 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 //                        this.particleLocations.add(new Vec3d(i, j, k));
 //                    }
                     if((isOnMaxOrMinX(i, thonk) && isOnMaxOrMinY(j, thonk)) || (isOnMaxOrMinY(j, thonk) && isOnMaxOrMinZ(k, thonk)) || (isOnMaxOrMinX(i, thonk) && isOnMaxOrMinZ(k, thonk)) || (isOnMaxOrMinY(j, thonk) && isOnMaxOrMinZ(k, thonk) && isOnMaxOrMinX(i, thonk))){
-                        this.particleLocations.add(new Vec3d(i+0.5, j+0.5, k+0.5));
+                        this.particleLocations.add(new Vec3d(i, j, k));
                     }
                 }
             }
         }
 
+    }
+
+
+    public int getComparatorOutput(){
+        return this.level ? this.effectTime/2400 : this.effectTime/1125;
     }
 
 
@@ -170,7 +176,7 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
             for (int j = (int) thonk.minY; j <= thonk.maxY; j++) {
                 for (int k = (int) thonk.minZ; k <= thonk.maxZ; k++) {
                     if ((isOnMaxOrMinX(i, thonk) && isOnMaxOrMinY(j, thonk)) || (isOnMaxOrMinY(j, thonk) && isOnMaxOrMinZ(k, thonk)) || (isOnMaxOrMinX(i, thonk) && isOnMaxOrMinZ(k, thonk))) {
-                        this.particleLocations.add(new Vec3d(i+0.5, j+0.5, k+0.5));
+                        this.particleLocations.add(new Vec3d(i, j, k));
                     }
                 }
             }
@@ -179,20 +185,28 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 
 
     public static <T extends ShulkLevitatorBlockEntity> void TICK(World world, BlockPos pos, BlockState state, T t) {
-        t.tick(world, pos, state);
+        t.tick(world, pos, state, t);
     }
 
     public void addEffectTime(int addAmount){
         this.effectTime = this.effectTime + addAmount;
     }
+    public void setEffectTime(int time){
+        this.effectTime = time;
+    }
+    public void removeEffectTime(int removeAmount){
+        this.effectTime -= removeAmount;
+    }
 
 
-
-    public void tick(World world, BlockPos pos, BlockState state) {
+    public void tick(World world, BlockPos pos, BlockState state, ShulkLevitatorBlockEntity blockEntity) {
 
         ArrayList<ServerPlayerEntity> currentPlayers = new ArrayList<>();
+        boolean shouldSetState = false;
         if(this.effectTime > 0) {
-            Box box;
+            shouldSetState = true;
+            Box box = new Box(0, 0, 0, 0, 0, 0);
+            Box thonk;
             Vec3d corner1 = Vec3d.ZERO;
             Vec3d corner2 = Vec3d.ZERO;
             Direction direction = null;
@@ -219,22 +233,22 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
                     corner1 = getVec3dFromBlockPos(pos.add(4, 4, -10));
                     corner2 = getVec3dFromBlockPos(pos.add(-4, -4, -1));
                 }
-                if (direction == Direction.UP && level) {
+                if (direction == Direction.UP && this.level) {
                     corner1 = getVec3dFromBlockPos(pos.add(8, 19, 8));
                     corner2 = getVec3dFromBlockPos(pos.add(-8, 1, -8));
-                } else if (direction == Direction.DOWN && level) {
+                } else if (direction == Direction.DOWN && this.level) {
                     corner1 = getVec3dFromBlockPos(pos.add(8, -19, 8));
                     corner2 = getVec3dFromBlockPos(pos.add(-8, -1, -8));
-                } else if (direction == Direction.EAST&& level) {
+                } else if (direction == Direction.EAST&& this.level) {
                     corner1 = getVec3dFromBlockPos(pos.add(19, 8, 8));
                     corner2 = getVec3dFromBlockPos(pos.add(1, -8, -8));
-                } else if (direction == Direction.WEST&& level) {
+                } else if (direction == Direction.WEST&& this.level) {
                     corner1 = getVec3dFromBlockPos(pos.add(-19, 8, 8));
                     corner2 = getVec3dFromBlockPos(pos.add(-1, -8, -8));
-                } else if (direction == Direction.SOUTH&& level) {
+                } else if (direction == Direction.SOUTH&& this.level) {
                     corner1 = getVec3dFromBlockPos(pos.add(8, 8, 19));
                     corner2 = getVec3dFromBlockPos(pos.add(-8, -8, 1));
-                } else if (direction == Direction.NORTH&& level) {
+                } else if (direction == Direction.NORTH&& this.level) {
                     corner1 = getVec3dFromBlockPos(pos.add(8, 8, -19));
                     corner2 = getVec3dFromBlockPos(pos.add(-8, -8, -1));
                 }
@@ -248,7 +262,6 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
             corner2.add(0.5, 0, 0.5);
 
             box = new Box(corner1, corner2);
-            //noinspection deprecation
             if (world.isRegionLoaded((int) box.minX, (int) box.minZ, (int) box.maxX, (int) box.maxZ)) {
                 for (Entity entity : world.getOtherEntities(null, box)) {
                     if (entity instanceof ServerPlayerEntity) {
@@ -312,7 +325,7 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
 
     @Override
     public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+        super.writeNbt(nbt);
         System.out.println("reading");
         this.effectTime = nbt.getInt(EFFECT_KEY);
         this.level = nbt.getBoolean(LEVEL_KEY);
@@ -325,7 +338,55 @@ public class ShulkLevitatorBlockEntity extends BlockEntity {
         nbt.putBoolean(LEVEL_KEY, this.level);
     }
 
-    public boolean canAddEffect(int time){
-        return this.level ? time < UpgradedShulkLevitatorBlock.MAX_CAPACITY-this.effectTime : time < RegularShulkLevitatorBlock.MAX_CAPACITY-this.effectTime;
+    public Box getBox(BlockState state){
+        Vec3d corner1 = Vec3d.ZERO;
+        Vec3d corner2 = Vec3d.ZERO;
+        Direction direction = null;
+        if (state.getBlock() instanceof RegularShulkLevitatorBlock || state.getBlock() instanceof UpgradedShulkLevitatorBlock) {
+            direction = state.get(Properties.FACING);
+        }
+        if (direction != null) {
+            if (direction == Direction.UP) {
+                corner1 = getVec3dFromBlockPos(pos.add(4, 10, 4));
+                corner2 = getVec3dFromBlockPos(pos.add(-4, 1, -4));
+            } else if (direction == Direction.DOWN) {
+                corner1 = getVec3dFromBlockPos(pos.add(4, -10, 4));
+                corner2 = getVec3dFromBlockPos(pos.add(-4, -1, -4));
+            } else if (direction == Direction.EAST) {
+                corner1 = getVec3dFromBlockPos(pos.add(10, 4, 4));
+                corner2 = getVec3dFromBlockPos(pos.add(1, -4, -4));
+            } else if (direction == Direction.WEST) {
+                corner1 = getVec3dFromBlockPos(pos.add(-10, 4, 4));
+                corner2 = getVec3dFromBlockPos(pos.add(-1, -4, -4));
+            } else if (direction == Direction.SOUTH) {
+                corner1 = getVec3dFromBlockPos(pos.add(4, 4, 10));
+                corner2 = getVec3dFromBlockPos(pos.add(-4, -4, 1));
+            } else if (direction == Direction.NORTH) {
+                corner1 = getVec3dFromBlockPos(pos.add(4, 4, -10));
+                corner2 = getVec3dFromBlockPos(pos.add(-4, -4, -1));
+            }
+            if (direction == Direction.UP && this.level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 19, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, 1, -8));
+            } else if (direction == Direction.DOWN && this.level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, -19, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -1, -8));
+            } else if (direction == Direction.EAST&& this.level) {
+                corner1 = getVec3dFromBlockPos(pos.add(19, 8, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(1, -8, -8));
+            } else if (direction == Direction.WEST&& this.level) {
+                corner1 = getVec3dFromBlockPos(pos.add(-19, 8, 8));
+                corner2 = getVec3dFromBlockPos(pos.add(-1, -8, -8));
+            } else if (direction == Direction.SOUTH&& this.level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 8, 19));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -8, 1));
+            } else if (direction == Direction.NORTH&& this.level) {
+                corner1 = getVec3dFromBlockPos(pos.add(8, 8, -19));
+                corner2 = getVec3dFromBlockPos(pos.add(-8, -8, -1));
+            }
+
+        }
+        return new Box(corner1, corner2);
+
     }
 }

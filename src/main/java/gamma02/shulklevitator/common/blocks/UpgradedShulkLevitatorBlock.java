@@ -5,8 +5,11 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -21,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
+@SuppressWarnings("deprecation")
 public class UpgradedShulkLevitatorBlock extends FacingBlock implements BlockEntityProvider {
 
     public static int MAX_CAPACITY = 36000;
@@ -49,20 +53,41 @@ public class UpgradedShulkLevitatorBlock extends FacingBlock implements BlockEnt
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 
-        return RegularShulkLevitatorBlock.shouldUse(world, pos, player, hand);
+        return RegularShulkLevitatorBlock.shouldUse(state, world, pos, player, hand, hit);
     }
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity blockEntity){
+        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity){
+            ShulkLevitatorBlockEntity blockEntity = (ShulkLevitatorBlockEntity) world.getBlockEntity(pos);
             blockEntity.displayTick(state, world, pos, random);
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return RegularShulkLevitatorBlock.getVoxelShape(state, DOWN, UP, EAST, WEST, NORTH, SOUTH);
+        Direction direction = state.get(Properties.FACING);
+
+        if(direction == Direction.DOWN){
+            return DOWN;
+        }else if(direction == Direction.UP){
+            return UP;
+        }else if(direction == Direction.EAST){
+            return EAST;
+        }else if(direction == Direction.WEST){
+            return WEST;
+        }else if(direction == Direction.NORTH){
+            return NORTH;
+        }else if(direction == Direction.SOUTH){
+            return SOUTH;
+        }else{
+            System.out.println("what happened!?!?!");
+            System.out.println("Direction was NOT A DIRECTION!!!!");
+            return Block.createCuboidShape(0, 0, 0, 1, 1, 1);
+        }
+
+
+
     }
 
     @Nullable
@@ -77,6 +102,33 @@ public class UpgradedShulkLevitatorBlock extends FacingBlock implements BlockEnt
     }
     public void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(Properties.FACING, Properties.ENABLED);
+    }
+
+    @Override
+    public boolean hasComparatorOutput(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity entity){
+            return entity.getComparatorOutput();
+        }
+        return 0;
+
+    }
+    @Override
+    public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
+        if(blockEntity instanceof ShulkLevitatorBlockEntity entity){
+            world.getOtherEntities(null, entity.getBox(state)).forEach((Entity entity1) -> {
+                if(entity1 instanceof PlayerEntity entity2){
+                    entity2.setStatusEffect(new StatusEffectInstance(Shulklevitator.FLIGHT, 0), null);
+                }
+            });
+        }
+        if(!world.isClient) {
+            Block.dropStacks(state, world, pos, blockEntity, player, this.asItem().getDefaultStack());
+        }
     }
 
 }

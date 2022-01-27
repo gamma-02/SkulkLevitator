@@ -5,6 +5,8 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -25,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 
+@SuppressWarnings("deprecation")
 public class RegularShulkLevitatorBlock extends FacingBlock implements BlockEntityProvider {
 
     public static int MAX_CAPACITY = 18000;
@@ -43,79 +46,70 @@ public class RegularShulkLevitatorBlock extends FacingBlock implements BlockEnti
         this.setDefaultState((this.stateManager.getDefaultState()).with(Properties.FACING, Direction.UP).with(Properties.ENABLED, false));
     }
 
+
+
     @Nullable
     @Override
     public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new ShulkLevitatorBlockEntity(pos, state, false);
     }
-    public static ActionResult shouldUse(World world, BlockPos pos, PlayerEntity player, Hand hand){
-        System.out.println("h e l l o");
-        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity entity && player.getStackInHand(hand).getItem() instanceof PotionItem){
-            ItemStack stack = player.getStackInHand(hand);
-            final int[] time = {0};
-            boolean matches = PotionUtil.getPotionEffects(stack).stream().anyMatch((statusEffectInstance) ->  {
-                if(statusEffectInstance.getEffectType() == StatusEffects.LEVITATION){
-                    time[0] = time[0] + statusEffectInstance.getDuration();
-                    return true;
-                }else {
-                    return false;
-                }
-            });
-            if(matches){
-                System.out.println(time[0]);
-                if(entity.canAddEffect(time[0])){
-                    stack.decrement(1);
-                    entity.addEffectTime(time[0]);
-                    return ActionResult.PASS;
-                }
-            }else{
-                return ActionResult.FAIL;
-            }
+    public static ActionResult shouldUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit){
+        if(player.getStackInHand(hand).getItem() instanceof PotionItem && world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity entity){
+            ItemStack potion = player.getStackInHand(hand);
+            int time = 0;
+            for(StatusEffectInstance instance : PotionUtil.getPotionEffects(potion)){
+                if(instance.getEffectType() == StatusEffects.LEVITATION){
+                    time += instance.getDuration();
 
+                }
+            }
+            if( MAX_CAPACITY - entity.effectTime > time ){
+                entity.addEffectTime(time);
+                potion.decrement(1);
+                return ActionResult.SUCCESS;
+            }
         }
         return ActionResult.FAIL;
     }
     @SuppressWarnings("deprecation")
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        return shouldUse(world, pos, player, hand);
+
+        return shouldUse(state, world, pos, player, hand, hit);
     }
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity blockEntity){
+        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity){
+            ShulkLevitatorBlockEntity blockEntity = (ShulkLevitatorBlockEntity) world.getBlockEntity(pos);
             blockEntity.displayTick(state, world, pos, random);
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return getVoxelShape(state, DOWN, UP, EAST, WEST, NORTH, SOUTH);
-
-
-    }
-
-    public static VoxelShape getVoxelShape(BlockState state, VoxelShape down, VoxelShape up, VoxelShape east, VoxelShape west, VoxelShape north, VoxelShape south) {
         Direction direction = state.get(Properties.FACING);
 
         if(direction == Direction.DOWN){
-            return down;
+            return DOWN;
         }else if(direction == Direction.UP){
-            return up;
+            return UP;
         }else if(direction == Direction.EAST){
-            return east;
+            return EAST;
         }else if(direction == Direction.WEST){
-            return west;
+            return WEST;
         }else if(direction == Direction.NORTH){
-            return north;
+            return NORTH;
         }else if(direction == Direction.SOUTH){
-            return south;
+            return SOUTH;
         }else{
             System.out.println("what happened!?!?!");
             System.out.println("Direction was NOT A DIRECTION!!!!");
             return Block.createCuboidShape(0, 0, 0, 1, 1, 1);
         }
+
+
+
     }
 
     @Nullable
@@ -132,4 +126,34 @@ public class RegularShulkLevitatorBlock extends FacingBlock implements BlockEnti
         builder.add(Properties.FACING, Properties.ENABLED);
     }
 
+    @Override
+    public boolean hasComparatorOutput(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        if(world.getBlockEntity(pos) instanceof ShulkLevitatorBlockEntity entity){
+            return entity.getComparatorOutput();
+        }
+        return 0;
+
+    }
+
+    @Override
+    public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack stack) {
+        if(blockEntity instanceof ShulkLevitatorBlockEntity entity){
+            world.getOtherEntities(null, entity.getBox(state)).forEach((Entity entity1) -> {
+                if(entity1 instanceof PlayerEntity entity2){
+                    entity2.setStatusEffect(new StatusEffectInstance(Shulklevitator.FLIGHT, 0), null);
+                }
+            });
+        }
+        if(!world.isClient) {
+//            ItemEntity item = new ItemEntity(world, pos.getX(), pos.getY()+0.2, pos.getZ(), this.asItem().getDefaultStack());
+//            world.spawnEntity(item);
+            Block.dropStack(world, pos, this.asItem().getDefaultStack());
+
+        }
+    }
 }
